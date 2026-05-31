@@ -101,9 +101,12 @@ if st.button("🚀 Proses Analisis Klasifikasi", type="primary"):
         input_data = pd.DataFrame([[bulan_encoded, kategori_encoded, produk_encoded, jumlah_box, harga_box]], 
                                   columns=['Bulan', 'Kategori_Produk', 'Nama_Produk', 'Jumlah_Box', 'Harga_Per_Box'])
         
-        # Prediksi klasifikasi nilai (0 = HIGH VALUE, 1 = LOW VALUE atau sebaliknya tergantung urutan abjad encoder)
+        # Prediksi klasifikasi nilai (0 = HIGH VALUE, 1 = LOW VALUE)
         prediksi_id = model.predict(input_data)[0]
-        prediksi_label = le_target.inverse_transform([prediksi_id])[0]
+        
+        # Mapping manual berdasarkan index model AI
+        target_classes = ['HIGH VALUE', 'LOW VALUE'] 
+        prediksi_label = target_classes[int(prediksi_id)]
         
         # Hitung Probabilitas Akurasi Prediksi
         probabilitas = model.predict_proba(input_data)[0][prediksi_id] * 100
@@ -133,7 +136,7 @@ if st.button("🚀 Proses Analisis Klasifikasi", type="primary"):
                 # Setup registry metrik Prometheus
                 registry = CollectorRegistry()
                 
-                # Membuat struktur metrik persis seperti di Pushgateway laporan teman
+                # Membuat struktur metrik persis seperti di Pushgateway
                 c_requests = Counter('app_requests_total', 'Total prediksi yang diproses', registry=registry)
                 g_latency = Gauge('inference_latency_seconds', 'Kecepatan pemrosesan model', registry=registry)
                 g_high_value = Gauge('model_prediction_high_value', 'Status jika bernilai High Value', registry=registry)
